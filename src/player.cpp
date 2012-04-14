@@ -103,7 +103,7 @@ float Player::setY(float y)
 int Player::getCriticalRadius() const
 {
     /* be more permissive */
-    return std::min(p->image.GetWidth(), p->image.GetHeight()) / (SQRT_2 * 4);
+    return std::min(p->image.GetWidth(), p->image.GetHeight()) / (SQRT_2 * 2);
 }
 
 int Player::getReboundRadius() const

@@ -9,6 +9,8 @@ public:
     Game(int width, int height);
     virtual ~Game();
     
+    void restart();
+    
     /**
      * Draw the game scene on the window.
      * @param w
@@ -22,6 +24,15 @@ public:
     void step(float t, const sf::Input& input);
     
     void generateBullets(int count);
+    
+    /**
+     * @param flag If %flag is true, the game will be suspended. Otherwise, the game
+     *       will be resumed.
+     */
+    void pause(bool flag);
+    void togglePause();
+    
+    bool isGameOver() const;
     
 private:
     // disable copy
