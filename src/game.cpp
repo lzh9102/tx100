@@ -28,6 +28,7 @@ struct Game::Private
     PlayerInput prev_input;
     sf::Vector2f center;
     float bullet_timer;
+    float game_timer;
     bool pause;
     int w, h;
     Private(int width, int height) : w(width), h(height), pause(false)
@@ -65,6 +66,7 @@ void Game::restart()
     p->player.start();
     generateBullets(MIN_BULLET_COUNT);
     p->pause = false;
+    p->game_timer = 0;
 }
 
 void Game::render(sf::RenderWindow& w)
@@ -138,6 +140,7 @@ void Game::step(float t, const sf::Input& input)
     }
     
     p->prev_input = pi;
+    p->game_timer += t;
     
     if (!p->player.isAlive())
         p->gameover_event();
@@ -171,6 +174,11 @@ void Game::pause(bool flag)
 void Game::togglePause()
 {
     p->pause = !p->pause;
+}
+
+float Game::getTime() const
+{
+    return p->game_timer;
 }
 
 bool Game::isGameOver() const

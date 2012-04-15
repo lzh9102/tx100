@@ -32,6 +32,10 @@ public:
     void pause(bool flag);
     void togglePause();
     
+    /**
+     * Return the time since the game starts (in seconds).
+     */
+    float getTime() const;
     bool isGameOver() const;
     
 private:

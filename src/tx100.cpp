@@ -1,5 +1,8 @@
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 #include "game.h"
 
 int event_loop(sf::RenderWindow& mainwindow);
@@ -38,6 +41,21 @@ int window_keypress(int keycode, Game& game, int& game_state,
     }
 }
 
+sf::String get_statistics(Game& game)
+{
+    std::ostringstream s;
+    s << std::setiosflags(std::ios::fixed) << std::setprecision(2)
+            << "Time: " << game.getTime();
+    return sf::String(s.str());
+}
+
+void text_center(sf::String& text, sf::RenderWindow& window)
+{
+    const int width = window.GetWidth(), height = window.GetHeight();
+    text.SetPosition((width - text.GetRect().GetWidth()) / 2,
+        (height - text.GetRect().GetHeight()) / 2);
+}
+
 int event_loop(sf::RenderWindow& mainwindow)
 {
     const int width = mainwindow.GetWidth(), height = mainwindow.GetHeight();
@@ -46,12 +64,11 @@ int event_loop(sf::RenderWindow& mainwindow)
     int game_state = STATE_WAIT;
     sf::String wait_text("Press \"Enter\" to start the game.");
     sf::String gameover_text("Game Over");
+    sf::String stat_text("");
     
     /* center text */
-    wait_text.SetPosition((width - wait_text.GetRect().GetWidth()) / 2,
-            (height - wait_text.GetRect().GetHeight()) / 2);
-    gameover_text.SetPosition((width - gameover_text.GetRect().GetWidth()) / 2,
-            (height - gameover_text.GetRect().GetHeight()) / 2);
+    text_center(wait_text, mainwindow);
+    text_center(gameover_text, mainwindow);
     
     while (mainwindow.IsOpened()) {
         sf::Event event;
@@ -70,18 +87,24 @@ int event_loop(sf::RenderWindow& mainwindow)
         
         if (game_state == STATE_INGAME) {
             game.step(interval, mainwindow.GetInput());
-            if (game.isGameOver())
-                    game_state = STATE_GAMEOVER;
+            if (game.isGameOver()) {
+                game_state = STATE_GAMEOVER;
+                stat_text = get_statistics(game);
+                text_center(stat_text, mainwindow);
+                stat_text.SetY(gameover_text.GetRect().Bottom);
+            }
         }
         
         clock.Reset();
         mainwindow.Clear(sf::Color::Black);
         game.render(mainwindow);
         
-        if (game_state == STATE_WAIT)
+        if (game_state == STATE_WAIT) {
             mainwindow.Draw(wait_text);
-        else if (game_state == STATE_GAMEOVER)
+        } else if (game_state == STATE_GAMEOVER) {
             mainwindow.Draw(gameover_text);
+            mainwindow.Draw(stat_text);
+        }
         
         mainwindow.Display();
         //sf::Sleep(0.1);
