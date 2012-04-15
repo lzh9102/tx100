@@ -32,6 +32,8 @@ public:
     
     float getX() const;
     float getY() const;
+    int getWidth() const;
+    int getHeight() const;
     sf::Vector2f getPosition() const;
     float setX(float x);
     float setY(float y);

@@ -85,6 +85,16 @@ float Player::getY() const
     return p->pos.y;
 }
 
+int Player::getWidth() const
+{
+    return p->image.GetWidth();
+}
+
+int Player::getHeight() const
+{
+    return p->image.GetHeight();
+}
+
 sf::Vector2f Player::getPosition() const
 {
     return p->pos;
