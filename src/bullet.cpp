@@ -9,19 +9,29 @@
 #include "vectorhelper.h"
 #include <cmath>
 
-Bullet::Bullet() { }
+#define ACCEL_RATE 1.5
+#define TRACK_PARAM 120
 
-Bullet::Bullet(int x, int y) : pos(x, y) { }
+Bullet::Bullet() : type(0) { }
 
-Bullet::Bullet(int x, int y, int vx, int vy) : pos(x, y), vel(vx, vy) { }
+Bullet::Bullet(int x, int y) : pos(x, y), type(0) { }
 
-Bullet::Bullet(const Bullet& orig) : pos(orig.pos), vel(orig.vel) { }
+Bullet::Bullet(int x, int y, int vx, int vy) : pos(x, y), vel(vx, vy), type(0) { }
 
 Bullet::~Bullet() { }
 
-void Bullet::step(float t)
+void Bullet::step(float t, float speed, sf::Vector2f& target)
 {
     pos += vel * t;
+    switch (type) {
+        case ACCELERATING:
+            vel *= (float)pow(ACCEL_RATE, t);
+            break;
+        case TRACKING:
+            vel += vector_normalize(target - pos) * (float)(TRACK_PARAM * t);
+            vel = vector_normalize(vel) * speed;
+            break;
+    }
 }
 
 bool Bullet::detectCollision(int x, int y, int rad) const

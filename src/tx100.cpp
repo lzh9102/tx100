@@ -32,6 +32,7 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
     if (keycode == sf::Key::Return) {
         switch (game_state) {
             case STATE_WAIT:
+                game.setBulletCount(bullet_count);
                 game.restart();
                 game_state = STATE_INGAME;
                 break;

@@ -14,13 +14,16 @@
 
 class Bullet {
 public:
+    
     Bullet();
     Bullet(int x, int y);
     Bullet(int x, int y, int vx, int vy);
-    Bullet(const Bullet& orig);
     virtual ~Bullet();
     
-    bool step(float t);
+    void step(float t, float speed, sf::Vector2f& target);
+    
+    /* track the target */
+    void step_track(float t, sf::Vector2f target, float speed);
     
     bool detectCollision(int x, int y, int rad) const;
     bool detectCollision(sf::Vector2f p, int rad) const;
@@ -33,6 +36,13 @@ public:
     
     sf::Vector2f pos; /* position */
     sf::Vector2f vel; /* velocity */
+    
+    enum BulletType {
+        NORMAL,
+        TRACKING,
+        ACCELERATING
+    };
+    int type;
 };
 
 #endif	/* BULLET_H */

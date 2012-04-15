@@ -9,6 +9,7 @@
 #include "player.h"
 #include "bullet.h"
 #include "vectorhelper.h"
+#include <ctime>
 #include <list>
 #include <cmath>
 
@@ -83,8 +84,19 @@ void Game::render(sf::RenderWindow& w)
     
     /* draw bullets */
     std::list<Bullet>::iterator it;
+    //bool draw_missile = (p->game_timer*3 - std::floor(p->game_timer*3)) > 0.3; /* blink */
     for (it=p->bullet_list.begin(); it!=p->bullet_list.end(); ++it) {
         p->bullet_shape.SetPosition(it->pos);
+        switch (it->type) {
+            case Bullet::NORMAL:
+                p->bullet_shape.SetColor(sf::Color::Yellow); break;
+            case Bullet::ACCELERATING:
+                p->bullet_shape.SetColor(sf::Color::Green); break;
+            case Bullet::TRACKING:
+                p->bullet_shape.SetColor(sf::Color::Red); break;
+        }
+        //if (it->type == Bullet::TRACKING && !draw_missile)
+        //    continue;
         w.Draw(p->bullet_shape);
     }
     
@@ -116,21 +128,22 @@ void Game::step(float t, const sf::Input& input)
     std::list<Bullet>::iterator bullet_it = p->bullet_list.begin();
     int player_radius = p->player.getCriticalRadius();
     int rebound_radius = p->player.getReboundRadius();
+    sf::Vector2f player_pos = p->player.getPosition();
     while (bullet_it!=p->bullet_list.end()) {
-        bullet_it->step(t);
+        bullet_it->step(t, BULLET_SPEED, player_pos);
         
         if (p->player.isAlive()) {
-            bool collision = bullet_it->detectCollision(p->player.getPosition(), player_radius);
+            bool collision = bullet_it->detectCollision(player_pos, player_radius);
 
             if (collision) {
                 p->player.stop();
                 bullet_it = p->bullet_list.erase(bullet_it);
                 continue;
-            } else if (pi.rebound && !p->prev_input.rebound) {
-                bool rebound = bullet_it->detectCollision(p->player.getPosition(), rebound_radius);
-                if (rebound) {
-                    bullet_it->rebound(p->player.getPosition());
-                }
+//            } else if (pi.rebound && !p->prev_input.rebound) {
+//                bool rebound = bullet_it->detectCollision(player_pos, rebound_radius);
+//                if (rebound) {
+//                    bullet_it->rebound(player_pos);
+//                }
             } else if (!vector_is_in_range(bullet_it->pos, 0, 0, p->w, p->h)){
                 /* if the product is negative, then the bullet is leaving the field */
                 if (vector_dot(p->center - bullet_it->pos, bullet_it->vel) < 0) {
@@ -165,13 +178,21 @@ void Game::generateBullets(int count)
         float theta = (rand() % 360) * 2 * PI / 360;
         float dist_deviation = 1 + (float)(rand() % BULLET_DIST_DEVIATION) / BULLET_DIST_DEVIATION;
         
+        /* position */
         bullet.pos = p->center + dist_deviation * start_distance * sf::Vector2f(cos(theta), sin(theta));
         
+        /* velocity and direction */
         sf::Vector2f velocity = vector_normalize(p->player.getPosition() - bullet.pos);
         sf::Vector2f dir_deviation = sf::Vector2f(-velocity.y, velocity.x); /* orthogonal to velocity */
         velocity *= (float)BULLET_SPEED;
         dir_deviation *= (float)(rand()%(BULLET_DIR_DEVIATION) - BULLET_DIR_DEVIATION);
         bullet.vel = velocity + dir_deviation;
+        
+        /* type */
+        if (rand() % 500 == 0)
+            bullet.type = Bullet::ACCELERATING;
+        else if (rand() % 30 == 0)
+            bullet.type = Bullet::TRACKING;
         
         p->bullet_list.push_back(bullet);
     }
