@@ -10,6 +10,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <list>
+#include "bullet.h"
 
 struct PlayerInput
 {
@@ -30,6 +31,9 @@ public:
     
     virtual void step(float t, const PlayerInput& input);
     
+    /* autoplay */
+    void step(float t, const std::list<Bullet>& bullet_list, const sf::Vector2f& center);
+    
     float getX() const;
     float getY() const;
     int getWidth() const;
@@ -37,6 +41,8 @@ public:
     sf::Vector2f getPosition() const;
     float setX(float x);
     float setY(float y);
+    
+    void constraint(int w, int h);
     
     int getCriticalRadius() const;
     int getReboundRadius() const;

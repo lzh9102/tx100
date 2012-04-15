@@ -5,14 +5,20 @@
 #include <iomanip>
 #include "game.h"
 
+#define BULLET_COUNT_DEFAULT 100
+#define BULLET_COUNT_MIN 10
+#define BULLET_COUNT_MAX 150
+
 int event_loop(sf::RenderWindow& mainwindow);
 
 enum {
     STATE_WAIT,
     STATE_INGAME,
-    STATE_GAMEOVER,
-    STATE_COUNT
+    STATE_GAMEOVER
 };
+
+int bullet_count = BULLET_COUNT_DEFAULT;
+int game_state = STATE_WAIT;
 
 int main(int argc, char** argv)
 {
@@ -22,8 +28,7 @@ int main(int argc, char** argv)
     return event_loop(mainwindow);
 }
 
-int window_keypress(int keycode, Game& game, int& game_state,
-        sf::RenderWindow& mainwindow) {
+int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
     if (keycode == sf::Key::Return) {
         switch (game_state) {
             case STATE_WAIT:
@@ -38,15 +43,36 @@ int window_keypress(int keycode, Game& game, int& game_state,
         }
     } else if (keycode == sf::Key::Escape) {
         mainwindow.Close();
+    } else if (game_state == STATE_WAIT) {
+        switch (keycode) {
+            case sf::Key::Left: /* decrement bullet count */
+                --bullet_count;
+                break;
+            case sf::Key::Right: /* increment bullet count */
+                ++bullet_count;
+                break;
+        }
+        if (bullet_count < BULLET_COUNT_MIN)
+            bullet_count = BULLET_COUNT_MIN;
+        else if (bullet_count > BULLET_COUNT_MAX)
+            bullet_count = BULLET_COUNT_MAX;
+        game.setBulletCount(bullet_count);
     }
 }
 
-sf::String get_statistics(Game& game)
+std::string get_statistics(Game& game)
 {
     std::ostringstream s;
     s << std::setiosflags(std::ios::fixed) << std::setprecision(2)
             << "Time: " << game.getTime();
-    return sf::String(s.str());
+    return s.str();
+}
+
+std::string get_bullet_count_text(int n)
+{
+    std::ostringstream s;
+    s << "<- Bullet Count: " << n << " ->";
+    return s.str();
 }
 
 void text_center(sf::String& text, sf::RenderWindow& window)
@@ -56,13 +82,19 @@ void text_center(sf::String& text, sf::RenderWindow& window)
         (height - text.GetRect().GetHeight()) / 2);
 }
 
+/* s.top = ref.bottom */
+void text_align_bottom(const sf::String& ref, sf::String& s)
+{
+    s.SetY(ref.GetRect().Bottom);
+}
+
 int event_loop(sf::RenderWindow& mainwindow)
 {
     const int width = mainwindow.GetWidth(), height = mainwindow.GetHeight();
     Game game(width, height);
     sf::Clock clock;
-    int game_state = STATE_WAIT;
     sf::String wait_text("Press \"Enter\" to start the game.");
+    sf::String bullet_count_text("");
     sf::String gameover_text("Game Over");
     sf::String stat_text("");
     
@@ -75,7 +107,7 @@ int event_loop(sf::RenderWindow& mainwindow)
         while (mainwindow.GetEvent(event)) { // window event handling
             switch (event.Type) {
                 case sf::Event::KeyPressed:
-                    window_keypress(event.Key.Code, game, game_state, mainwindow);
+                    window_keypress(event.Key.Code, game, mainwindow);
                     break;
                 case sf::Event::Closed: // window close event
                     mainwindow.Close();
@@ -89,9 +121,9 @@ int event_loop(sf::RenderWindow& mainwindow)
             game.step(interval, mainwindow.GetInput());
             if (game.isGameOver()) {
                 game_state = STATE_GAMEOVER;
-                stat_text = get_statistics(game);
+                stat_text.SetText(get_statistics(game));
                 text_center(stat_text, mainwindow);
-                stat_text.SetY(gameover_text.GetRect().Bottom);
+                text_align_bottom(gameover_text, stat_text);
             }
         }
         
@@ -100,7 +132,12 @@ int event_loop(sf::RenderWindow& mainwindow)
         game.render(mainwindow);
         
         if (game_state == STATE_WAIT) {
+            bullet_count_text.SetText(get_bullet_count_text(bullet_count));
+            text_center(wait_text, mainwindow);
+            text_center(bullet_count_text, mainwindow);
+            text_align_bottom(wait_text, bullet_count_text);
             mainwindow.Draw(wait_text);
+            mainwindow.Draw(bullet_count_text);
         } else if (game_state == STATE_GAMEOVER) {
             mainwindow.Draw(gameover_text);
             mainwindow.Draw(stat_text);

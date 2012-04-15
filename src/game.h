@@ -9,6 +9,8 @@ public:
     Game(int width, int height);
     virtual ~Game();
     
+    void setBulletCount(unsigned int n);
+    
     void restart();
     
     /**

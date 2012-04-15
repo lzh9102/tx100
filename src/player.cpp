@@ -5,7 +5,7 @@
  * Created on 2012年1月26日, 下午 10:58
  */
 
-#define PLAYER_SPEED 100
+#define PLAYER_SPEED (float)100
 
 #include "player.h"
 #include "vectorhelper.h"
@@ -75,6 +75,31 @@ void Player::step(float t, const PlayerInput& input)
         p->pos += vector_normalize(delta) * (t * PLAYER_SPEED);
 }
 
+void Player::step(float t, const std::list<Bullet>& bullet_list,
+        const sf::Vector2f& center)
+{
+    sf::Vector2f v;
+    std::list<Bullet>::const_iterator it;
+
+    for (it=bullet_list.begin(); it!=bullet_list.end(); ++it) {
+        const Bullet& bullet = *it;
+        const sf::Vector2f difference = p->pos - bullet.pos;
+        const float distance = vector_length(difference);
+        sf::Vector2f normal = vector_normalize(sf::Vector2f(-bullet.vel.y, bullet.vel.x));
+        if (distance > 3 * getWidth())
+            normal /= (distance * distance);
+        if (vector_dot(difference, bullet.vel) > 0)
+            v += normal;
+        //v += - (difference * (float)0.01);
+    }
+    
+    sf::Vector2f deviation = center - p->pos;
+    if (vector_length(deviation) >= 100)
+        v += vector_normalize(deviation) / (float)10000;
+
+    p->pos += vector_normalize(v) * PLAYER_SPEED * t;
+}
+
 float Player::getX() const
 {
     return p->pos.x;
@@ -108,6 +133,23 @@ float Player::setX(float x)
 float Player::setY(float y)
 {
     return p->pos.y = y;
+}
+
+void Player::constraint(int w, int h)
+{
+    const int player_width = p->image.GetWidth(), player_height = p->image.GetHeight();
+    const int top_limit = player_height/2, bottom_limit = h - player_height/2;
+    const int left_limit = player_width/2, right_limit = w - player_width/2;
+    const int x = p->pos.x, y = p->pos.y;
+
+    if (x < left_limit)
+        p->pos.x = left_limit;
+    else if (x >= right_limit)
+        p->pos.x = right_limit;
+    if (y < top_limit)
+        p->pos.y = top_limit;
+    else if (y >= bottom_limit)
+        p->pos.y = bottom_limit;
 }
 
 int Player::getCriticalRadius() const

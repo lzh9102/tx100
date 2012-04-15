@@ -7,7 +7,6 @@
 
 #include "game.h"
 #include "player.h"
-#include "autoplay.h"
 #include "bullet.h"
 #include "vectorhelper.h"
 #include <list>
@@ -17,15 +16,13 @@
 #define BULLET_DIST_DEVIATION 30
 #define BULLET_GEN_FREQ 2.0
 #define BULLET_SPEED 130
-#define MIN_BULLET_COUNT 100
-//#define MIN_BULLET_COUNT 10
+#define DEFAULT_BULLET_COUNT 100
 #define PI 3.1415926
 
 struct Game::Private
 {
     std::list<Bullet> bullet_list;
     Player player;
-    AutoPlay autoplay;
     sf::Shape bullet_shape;
     sf::String str_pause;
     PlayerInput prev_input;
@@ -34,8 +31,9 @@ struct Game::Private
     float game_timer;
     bool pause;
     int w, h;
+    int bullet_count;
     Private(int width, int height) : w(width), h(height), pause(false)
-        , autoplay(player, bullet_list)
+        , bullet_count(DEFAULT_BULLET_COUNT)
     {
         bullet_shape = sf::Shape::Circle(0, 0, BULLET_RADIUS, sf::Color::Yellow);
         center = sf::Vector2f(w/2, h/2);
@@ -50,23 +48,6 @@ struct Game::Private
     {
         player.stop();
     }
-    /* make sure the player does not go out of the screen */
-    void constraint_player()
-    {
-        const int player_width = player.getWidth(), player_height = player.getHeight();
-        const int top_limit = player_height/2, bottom_limit = h - player_height/2;
-        const int left_limit = player_width/2, right_limit = w - player_width/2;
-        const int x = player.getX(), y = player.getY();
-        
-        if (x < left_limit)
-            player.setX(left_limit);
-        else if (x >= right_limit)
-            player.setX(right_limit);
-        if (y < top_limit)
-            player.setY(top_limit);
-        else if (y >= bottom_limit)
-            player.setY(bottom_limit);
-    }
 };
 
 Game::Game(int width, int height) : p(new Private(width, height))
@@ -79,13 +60,18 @@ Game::~Game()
     delete p;
 }
 
+void Game::setBulletCount(unsigned int n)
+{
+    p->bullet_count = n;
+}
+
 void Game::restart()
 {
     p->bullet_list.clear();
     p->player.setX(p->w/2);
     p->player.setY(p->h/2);
     p->player.start();
-    generateBullets(MIN_BULLET_COUNT);
+    generateBullets(p->bullet_count);
     p->pause = false;
     p->game_timer = 0;
 }
@@ -121,9 +107,10 @@ void Game::step(float t, const sf::Input& input)
     //pi.rebound = input.IsKeyDown(sf::Key::Space);
     pi.rebound = false; /* disable rebound */
     p->player.step(t, pi);
+    //p->player.step(t, p->bullet_list, sf::Vector2f(p->w / 2, p->h / 2));
     //p->autoplay.step(t);
     
-    p->constraint_player();
+    p->player.constraint(p->w, p->h);
     
     /* move bullets */
     std::list<Bullet>::iterator bullet_it = p->bullet_list.begin();
@@ -158,8 +145,8 @@ void Game::step(float t, const sf::Input& input)
     
     p->bullet_timer += t;
     
-    if (p->bullet_timer > BULLET_GEN_FREQ && p->bullet_list.size() < MIN_BULLET_COUNT) {
-        generateBullets(rand() % MIN_BULLET_COUNT + 1);
+    if (p->bullet_timer > BULLET_GEN_FREQ && p->bullet_list.size() < p->bullet_count) {
+        generateBullets(rand() % p->bullet_count + 1);
         p->bullet_timer = 0;
     }
     
