@@ -26,14 +26,15 @@ struct Game::Private
     Player player;
     sf::Shape bullet_shape;
     sf::String str_pause;
+    sf::String str_autoplay;
     PlayerInput prev_input;
     sf::Vector2f center;
     float bullet_timer;
     float game_timer;
-    bool pause;
+    bool pause, autoplay;
     int w, h;
     int bullet_count;
-    Private(int width, int height) : w(width), h(height), pause(false)
+    Private(int width, int height) : w(width), h(height), pause(false), autoplay(false)
         , bullet_count(DEFAULT_BULLET_COUNT)
     {
         bullet_shape = sf::Shape::Circle(0, 0, BULLET_RADIUS, sf::Color::Yellow);
@@ -43,6 +44,9 @@ struct Game::Private
         str_pause.Move((w - str_pause.GetRect().GetWidth())/2,
                 (h - str_pause.GetRect().GetHeight())/2);
         str_pause.SetColor(sf::Color::Red);
+        str_autoplay.SetText("Auto Play");
+        str_autoplay.SetColor(sf::Color::Red);
+        str_autoplay.Move(0, 0);
         player.stop();
     }
     void gameover_event()
@@ -64,6 +68,11 @@ Game::~Game()
 void Game::setBulletCount(unsigned int n)
 {
     p->bullet_count = n;
+}
+
+void Game::setAutoPlay(bool flag)
+{
+    p->autoplay = flag;
 }
 
 void Game::restart()
@@ -103,6 +112,9 @@ void Game::render(sf::RenderWindow& w)
     if (p->pause) {
         w.Draw(p->str_pause);
     }
+    if (p->autoplay) {
+        w.Draw(p->str_autoplay);
+    }
 }
 
 void Game::step(float t, const sf::Input& input)
@@ -118,9 +130,11 @@ void Game::step(float t, const sf::Input& input)
     pi.right = input.IsKeyDown(sf::Key::Right);
     //pi.rebound = input.IsKeyDown(sf::Key::Space);
     pi.rebound = false; /* disable rebound */
-    p->player.step(t, pi);
-    //p->player.step(t, p->bullet_list, sf::Vector2f(p->w / 2, p->h / 2));
-    //p->autoplay.step(t);
+    
+    if (p->autoplay)
+        p->player.step(t, p->bullet_list, sf::Vector2f(p->w / 2, p->h / 2));
+    else
+        p->player.step(t, pi);
     
     p->player.constraint(p->w, p->h);
     

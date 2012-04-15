@@ -10,6 +10,7 @@ public:
     virtual ~Game();
     
     void setBulletCount(unsigned int n);
+    void setAutoPlay(bool);
     
     void restart();
     
