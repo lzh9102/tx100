@@ -104,13 +104,17 @@ int event_loop(sf::RenderWindow& mainwindow)
     
     while (mainwindow.IsOpened()) {
         sf::Event event;
-        while (mainwindow.GetEvent(event)) { // window event handling
+        while (mainwindow.GetEvent(event)) { /* window event handling */
             switch (event.Type) {
                 case sf::Event::KeyPressed:
                     window_keypress(event.Key.Code, game, mainwindow);
                     break;
-                case sf::Event::Closed: // window close event
+                case sf::Event::Closed: /* window close event */
                     mainwindow.Close();
+                    break;
+                case sf::Event::LostFocus: /* window lost focus */
+                    if (game_state == STATE_INGAME)
+                        game.pause(true);
                     break;
             }
         }
