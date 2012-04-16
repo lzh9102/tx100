@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 Timothy Lin
+ * This work is licensed under GPLv3 as published by the Free Software
+ * Foundation. Please see http://www.gnu.org/licenses/gpl.html for details.
+ */
+
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <sstream>
@@ -22,7 +28,8 @@ int game_state = STATE_WAIT;
 
 int main(int argc, char** argv)
 {
-    sf::RenderWindow mainwindow(sf::VideoMode(800, 600), "TX100",
+    sf::RenderWindow mainwindow(sf::VideoMode(800, 600), "TX100 ("
+            "http://code.google.com/p/tx100" ")",
             sf::Style::Close);
     
     return event_loop(mainwindow);

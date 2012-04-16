@@ -1,8 +1,7 @@
-/* 
- * File:   player.cpp
- * Author: timothy
- * 
- * Created on 2012年1月26日, 下午 10:58
+/*
+ * Copyright (C) 2012 Timothy Lin
+ * This work is licensed under GPLv3 as published by the Free Software
+ * Foundation. Please see http://www.gnu.org/licenses/gpl.html for details.
  */
 
 #define PLAYER_SPEED (float)100
@@ -86,8 +85,11 @@ void Player::step(float t, const std::list<Bullet>& bullet_list,
         const sf::Vector2f difference = p->pos - bullet.pos;
         const float distance = vector_length(difference);
         sf::Vector2f normal = vector_normalize(sf::Vector2f(-bullet.vel.y, bullet.vel.x));
-        if (distance > 3 * getWidth())
-            normal /= (distance * distance);
+        //if (distance > 10 * getWidth())
+        //    normal = sf::Vector2f(0, 0);
+        normal /= (float)0.05 * distance;
+        if (vector_dot(difference, normal) < 0)
+            normal = -normal;
         if (vector_dot(difference, bullet.vel) > 0)
             v += normal;
         //v += - (difference * (float)0.01);
@@ -95,9 +97,10 @@ void Player::step(float t, const std::list<Bullet>& bullet_list,
     
     sf::Vector2f deviation = center - p->pos;
     if (vector_length(deviation) >= 100)
-        v += vector_normalize(deviation) / (float)10000;
-
-    p->pos += vector_normalize(v) * PLAYER_SPEED * t;
+        v += vector_normalize(deviation);
+    
+    if (vector_length(v) >= t)
+        p->pos += vector_normalize(v) * PLAYER_SPEED * t;
 }
 
 float Player::getX() const

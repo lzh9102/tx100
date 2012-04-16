@@ -1,8 +1,7 @@
-/* 
- * File:   player.h
- * Author: timothy
- *
- * Created on 2012年1月26日, 下午 10:58
+/*
+ * Copyright (C) 2012 Timothy Lin
+ * This work is licensed under GPLv3 as published by the Free Software
+ * Foundation. Please see http://www.gnu.org/licenses/gpl.html for details.
  */
 
 #ifndef PLAYER_H
