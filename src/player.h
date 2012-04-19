@@ -14,7 +14,6 @@
 struct PlayerInput
 {
     bool up, down, left, right;
-    bool rebound;
 };
 
 class Player
@@ -44,7 +43,6 @@ public:
     void constraint(int w, int h);
     
     int getCriticalRadius() const;
-    int getReboundRadius() const;
     
     bool isAlive() const;
     

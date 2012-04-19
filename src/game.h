@@ -15,8 +15,14 @@ public:
     Game(int width, int height);
     virtual ~Game();
     
+    enum PlayerType {
+        OFF,
+        HUMAN,
+        COMPUTER
+    };
+    
     void setBulletCount(unsigned int n);
-    void setAutoPlay(bool);
+    void setPlayerType(unsigned int index, PlayerType type);
     
     void restart();
     

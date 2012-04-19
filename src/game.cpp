@@ -11,6 +11,7 @@
 #include <ctime>
 #include <list>
 #include <cmath>
+#include <algorithm>
 
 #define BULLET_DIR_DEVIATION 10
 #define BULLET_DIST_DEVIATION 30
@@ -19,22 +20,41 @@
 #define DEFAULT_BULLET_COUNT 100
 #define PI 3.1415926
 
+#define PLAYER_COUNT 2
+#define FOREACH_PLAYER(iter) for (int iter=0; iter<PLAYER_COUNT; ++iter)
+
+namespace {
+    struct PlayerKeymap {
+        sf::Key::Code up;
+        sf::Key::Code down;
+        sf::Key::Code left;
+        sf::Key::Code right;
+    };
+    /* Keymap for the players */
+    PlayerKeymap keymap[PLAYER_COUNT] = {
+        /* {up, down, left, right} */
+        {sf::Key::Up, sf::Key::Down, sf::Key::Left, sf::Key::Right},
+        {sf::Key::R, sf::Key::F, sf::Key::D, sf::Key::G}
+    };
+}
+
 struct Game::Private
 {
     std::list<Bullet> bullet_list;
-    Player player;
+    Player player[PLAYER_COUNT];
     sf::Shape bullet_shape;
     sf::String str_pause;
-    sf::String str_autoplay;
     PlayerInput prev_input;
     sf::Vector2f center;
     float bullet_timer;
     float game_timer;
-    bool pause, autoplay;
+    bool pause;
+    PlayerType player_type[PLAYER_COUNT];
     int w, h;
     int bullet_count;
-    Private(int width, int height) : w(width), h(height), pause(false), autoplay(false)
-        , bullet_count(DEFAULT_BULLET_COUNT)
+    bool gameover;
+    Private(int width, int height) : w(width), h(height), pause(false)
+        , bullet_count(DEFAULT_BULLET_COUNT), gameover(true)
     {
         bullet_shape = sf::Shape::Circle(0, 0, BULLET_RADIUS, sf::Color::Yellow);
         center = sf::Vector2f(w/2, h/2);
@@ -43,14 +63,29 @@ struct Game::Private
         str_pause.Move((w - str_pause.GetRect().GetWidth())/2,
                 (h - str_pause.GetRect().GetHeight())/2);
         str_pause.SetColor(sf::Color::Red);
-        str_autoplay.SetText("Auto Play");
-        str_autoplay.SetColor(sf::Color::Red);
-        str_autoplay.Move(0, 0);
-        player.stop();
+        FOREACH_PLAYER(i) {
+            player[i].stop();
+            player_type[i] = OFF;
+        }
+        player_type[0] = HUMAN;
     }
     void gameover_event()
     {
-        player.stop();
+        FOREACH_PLAYER(i) player[i].stop();
+        gameover = true;
+    }
+    int random_alive_index()
+    {
+        int a[PLAYER_COUNT];
+        FOREACH_PLAYER(i)
+            a[i] = i;
+        FOREACH_PLAYER(i)
+            std::swap(a[i], a[rand()%PLAYER_COUNT]);
+        FOREACH_PLAYER(i) {
+            if (player[a[i]].isAlive())
+                return i;
+        }
+        return 0;
     }
 };
 
@@ -69,26 +104,34 @@ void Game::setBulletCount(unsigned int n)
     p->bullet_count = n;
 }
 
-void Game::setAutoPlay(bool flag)
+void Game::setPlayerType(unsigned int index, PlayerType type)
 {
-    p->autoplay = flag;
+    if (index < PLAYER_COUNT)
+        p->player_type[index] = type;
 }
 
 void Game::restart()
 {
     p->bullet_list.clear();
-    p->player.setX(p->w/2);
-    p->player.setY(p->h/2);
-    p->player.start();
+    FOREACH_PLAYER(i) {
+        p->player[i].setX(p->w/2);
+        p->player[i].setY(p->h/2);
+        if (p->player_type[i] != OFF)
+            p->player[i].start();
+    }
     generateBullets(p->bullet_count);
     p->pause = false;
     p->game_timer = 0;
+    p->gameover = false;
 }
 
 void Game::render(sf::RenderWindow& w)
 {
     /* draw player */
-    p->player.render(w);
+    FOREACH_PLAYER(i) {
+        if (p->player[i].isAlive())
+            p->player[i].render(w);
+    }
     
     /* draw bullets */
     std::list<Bullet>::iterator it;
@@ -111,9 +154,6 @@ void Game::render(sf::RenderWindow& w)
     if (p->pause) {
         w.Draw(p->str_pause);
     }
-    if (p->autoplay) {
-        w.Draw(p->str_autoplay);
-    }
 }
 
 void Game::step(float t, const sf::Input& input)
@@ -121,47 +161,60 @@ void Game::step(float t, const sf::Input& input)
     if (p->pause || isGameOver())
         return;
     
+   
     /* move player */
-    PlayerInput pi;
-    pi.up = input.IsKeyDown(sf::Key::Up);
-    pi.down = input.IsKeyDown(sf::Key::Down);
-    pi.left = input.IsKeyDown(sf::Key::Left);
-    pi.right = input.IsKeyDown(sf::Key::Right);
-    //pi.rebound = input.IsKeyDown(sf::Key::Space);
-    pi.rebound = false; /* disable rebound */
-    
-    if (p->autoplay)
-        p->player.step(t, p->bullet_list, sf::Vector2f(p->w / 2, p->h / 2));
-    else
-        p->player.step(t, pi);
-    
-    p->player.constraint(p->w, p->h);
+    FOREACH_PLAYER(i) {
+        PlayerInput pi;
+        PlayerKeymap *km = &keymap[i];
+        pi.up = input.IsKeyDown(km->up);
+        pi.down = input.IsKeyDown(km->down);
+        pi.left = input.IsKeyDown(km->left);
+        pi.right = input.IsKeyDown(km->right);
+        
+        Player *player = p->player;
+        if (p->player_type[i] == COMPUTER)
+            player[i].step(t, p->bullet_list, sf::Vector2f(p->w / 2, p->h / 2));
+        else
+            player[i].step(t, pi);
+        player[i].constraint(p->w, p->h);
+    }
     
     /* move bullets */
     std::list<Bullet>::iterator bullet_it = p->bullet_list.begin();
-    int player_radius = p->player.getCriticalRadius();
-    int rebound_radius = p->player.getReboundRadius();
-    sf::Vector2f player_pos = p->player.getPosition();
-    while (bullet_it!=p->bullet_list.end()) {
-        bullet_it->step(t, BULLET_SPEED, player_pos);
-        
-        if (p->player.isAlive()) {
-            bool collision = bullet_it->detectCollision(player_pos, player_radius);
 
-            if (collision) {
-                p->player.stop();
-                bullet_it = p->bullet_list.erase(bullet_it);
-                continue;
-//            } else if (pi.rebound && !p->prev_input.rebound) {
-//                bool rebound = bullet_it->detectCollision(player_pos, rebound_radius);
-//                if (rebound) {
-//                    bullet_it->rebound(player_pos);
-//                }
-            } else if (!vector_is_in_range(bullet_it->pos, 0, 0, p->w, p->h)){
-                /* if the product is negative, then the bullet is leaving the field */
-                if (vector_dot(p->center - bullet_it->pos, bullet_it->vel) < 0) {
+    while (bullet_it!=p->bullet_list.end()) {
+        
+        /* find the nearest alive player */
+        float min_distance = 10000.0;
+        int min_index = 0;
+        FOREACH_PLAYER(i) {
+            if (p->player[i].isAlive()) {
+                float d = vector_length(bullet_it->pos - p->player[i].getPosition());
+                if (min_distance > d)
+                    min_distance = d, min_index = i;
+            }
+        }
+        
+        /* follow the nearest target */
+        bullet_it->step(t, BULLET_SPEED, p->player[min_index].getPosition());
+        
+        FOREACH_PLAYER(index) {
+            Player *player = p->player;
+            int player_radius = player[index].getCriticalRadius();
+            sf::Vector2f player_pos = player[index].getPosition();
+            if (player[index].isAlive()) {
+                bool collision = bullet_it->detectCollision(player_pos, player_radius);
+
+                if (collision) {
+                    player[index].stop();
                     bullet_it = p->bullet_list.erase(bullet_it);
                     continue;
+                } else if (!vector_is_in_range(bullet_it->pos, 0, 0, p->w, p->h)){
+                    /* if the product is negative, then the bullet is leaving the field */
+                    if (vector_dot(p->center - bullet_it->pos, bullet_it->vel) < 0) {
+                        bullet_it = p->bullet_list.erase(bullet_it);
+                        continue;
+                    }
                 }
             }
         }
@@ -176,10 +229,14 @@ void Game::step(float t, const sf::Input& input)
         p->bullet_timer = 0;
     }
     
-    p->prev_input = pi;
     p->game_timer += t;
     
-    if (!p->player.isAlive())
+    int alive = 0;
+    FOREACH_PLAYER(i) {
+        if (p->player[i].isAlive())
+            ++alive;
+    }
+    if (!alive)
         p->gameover_event();
 }
 
@@ -195,7 +252,7 @@ void Game::generateBullets(int count)
         bullet.pos = p->center + dist_deviation * start_distance * sf::Vector2f(cos(theta), sin(theta));
         
         /* velocity and direction */
-        sf::Vector2f velocity = vector_normalize(p->player.getPosition() - bullet.pos);
+        sf::Vector2f velocity = vector_normalize(p->player[p->random_alive_index()].getPosition() - bullet.pos);
         sf::Vector2f dir_deviation = sf::Vector2f(-velocity.y, velocity.x); /* orthogonal to velocity */
         velocity *= (float)BULLET_SPEED;
         dir_deviation *= (float)(rand()%(BULLET_DIR_DEVIATION) - BULLET_DIR_DEVIATION);
@@ -228,5 +285,5 @@ float Game::getTime() const
 
 bool Game::isGameOver() const
 {
-    return !p->player.isAlive();
+    return p->gameover;
 }

@@ -45,7 +45,7 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
         switch (game_state) {
             case STATE_WAIT:
                 game.setBulletCount(bullet_count);
-                game.setAutoPlay(false);
+                game.setPlayerType(0, Game::HUMAN);
                 game.restart();
                 game_state = STATE_INGAME;
                 break;
@@ -67,7 +67,7 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
                 break;
             case sf::Key::F1: /* autoplay */
                 game.setBulletCount(bullet_count);
-                game.setAutoPlay(true);
+                game.setPlayerType(0, Game::COMPUTER);
                 game.restart();
                 game_state = STATE_INGAME;
                 break;

@@ -19,7 +19,7 @@ public:
     Bullet(int x, int y, int vx, int vy);
     virtual ~Bullet();
     
-    void step(float t, float speed, sf::Vector2f& target);
+    void step(float t, float speed, const sf::Vector2f& target);
     
     /* track the target */
     void step_track(float t, sf::Vector2f target, float speed);

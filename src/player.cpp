@@ -168,11 +168,6 @@ int Player::getCriticalRadius() const
     return std::min(p->image.GetWidth(), p->image.GetHeight()) / (SQRT_2 * 2);
 }
 
-int Player::getReboundRadius() const
-{
-    return std::min((float)p->image.GetWidth(), (float)(p->image.GetHeight() / 2));
-}
-
 bool Player::isAlive() const
 {
     return p->alive;

@@ -19,7 +19,7 @@ Bullet::Bullet(int x, int y, int vx, int vy) : pos(x, y), vel(vx, vy), type(0) {
 
 Bullet::~Bullet() { }
 
-void Bullet::step(float t, float speed, sf::Vector2f& target)
+void Bullet::step(float t, float speed, const sf::Vector2f& target)
 {
     pos += vel * t;
     switch (type) {
