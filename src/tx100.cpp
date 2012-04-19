@@ -13,6 +13,7 @@
 #include <ctime>
 #include "game.h"
 
+#define RANDOM_SEED time(0)
 #define BULLET_COUNT_DEFAULT 50
 #define BULLET_COUNT_MIN 10
 #define BULLET_COUNT_MAX 150
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
             "http://code.google.com/p/tx100" ")",
             sf::Style::Close);
     
-    srand(10);
+    srand(RANDOM_SEED);
     
     return event_loop(mainwindow);
 }
