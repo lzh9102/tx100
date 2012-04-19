@@ -9,9 +9,11 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
+#include <ctime>
 #include "game.h"
 
-#define BULLET_COUNT_DEFAULT 100
+#define BULLET_COUNT_DEFAULT 50
 #define BULLET_COUNT_MIN 10
 #define BULLET_COUNT_MAX 150
 
@@ -31,6 +33,8 @@ int main(int argc, char** argv)
     sf::RenderWindow mainwindow(sf::VideoMode(800, 600), "TX100 ("
             "http://code.google.com/p/tx100" ")",
             sf::Style::Close);
+    
+    srand(10);
     
     return event_loop(mainwindow);
 }
@@ -106,6 +110,7 @@ void text_align_bottom(const sf::String& ref, sf::String& s)
 int event_loop(sf::RenderWindow& mainwindow)
 {
     const int width = mainwindow.GetWidth(), height = mainwindow.GetHeight();
+    int repeat = 0;
     Game game(width, height);
     sf::Clock clock;
     sf::String wait_text("Press \"Enter\" to start the game.");
@@ -136,8 +141,16 @@ int event_loop(sf::RenderWindow& mainwindow)
         
         float interval = clock.GetElapsedTime();
         
+        repeat = 1;
+        
+        if (mainwindow.GetInput().IsKeyDown(sf::Key::F2))
+            interval /= 5;
+        else if (mainwindow.GetInput().IsKeyDown(sf::Key::F3))
+            repeat = 5;
+        
         if (game_state == STATE_INGAME) {
-            game.step(interval, mainwindow.GetInput());
+            for (int i=0; i<repeat; i++)
+                game.step(interval, mainwindow.GetInput());
             if (game.isGameOver()) {
                 game_state = STATE_GAMEOVER;
                 stat_text.SetText(get_statistics(game));

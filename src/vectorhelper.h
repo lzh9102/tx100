@@ -56,5 +56,14 @@ bool vector_is_in_range(const sf::Vector2<T>& v, int x1, int y1, int x2, int y2)
     return v.x >= x1 && v.x <= x2 && v.y >= y1 && v.y <= y2;
 }
 
+template <class T>
+float vector_correlation(const sf::Vector2<T>& v1, const sf::Vector2<T>& v2)
+{
+    float l1 = vector_length(v1), l2 = vector_length(v2);
+    if (l1 * l2 == 0.0)
+        return 0.0;
+    return vector_dot(v1, v2) / (l1 * l2);
+}
+
 #endif	/* VECTORHELPER_H */
 
