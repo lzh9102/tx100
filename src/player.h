@@ -46,6 +46,8 @@ public:
     
     bool isAlive() const;
     
+    bool setImage(const char *filename);
+    
 private:
     // disable copy
     Player(const Player&);

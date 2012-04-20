@@ -19,11 +19,7 @@ struct Player::Private
     sf::Vector2f pos; /* position */
     bool alive;
 
-    Private() : alive(false)
-    {
-        image.LoadFromFile("player.png");
-        sprite.SetImage(image);
-    }
+    Private() : alive(false) { }
     
     void render(sf::RenderWindow& w)
     {
@@ -171,4 +167,10 @@ int Player::getCriticalRadius() const
 bool Player::isAlive() const
 {
     return p->alive;
+}
+
+bool Player::setImage(const char* filename)
+{
+    p->image.LoadFromFile(filename);
+    p->sprite.SetImage(p->image);
 }

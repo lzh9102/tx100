@@ -11,6 +11,7 @@
 #include <ctime>
 #include <list>
 #include <cmath>
+#include <cstdio>
 #include <algorithm>
 
 #define BULLET_DIR_DEVIATION 10
@@ -20,7 +21,6 @@
 #define DEFAULT_BULLET_COUNT 100
 #define PI 3.1415926
 
-#define PLAYER_COUNT 2
 #define FOREACH_PLAYER(iter) for (int iter=0; iter<PLAYER_COUNT; ++iter)
 
 namespace {
@@ -50,6 +50,7 @@ struct Game::Private
     float game_timer;
     bool pause;
     PlayerType player_type[PLAYER_COUNT];
+    float player_timer[PLAYER_COUNT];
     int w, h;
     int bullet_count;
     bool gameover;
@@ -64,6 +65,9 @@ struct Game::Private
                 (h - str_pause.GetRect().GetHeight())/2);
         str_pause.SetColor(sf::Color::Red);
         FOREACH_PLAYER(i) {
+            char filename[100];
+            sprintf(filename, "player%d.png", i+1);
+            player[i].setImage(filename);
             player[i].stop();
             player_type[i] = OFF;
         }
@@ -118,6 +122,7 @@ void Game::restart()
         p->player[i].setY(p->h/2);
         if (p->player_type[i] != OFF)
             p->player[i].start();
+        p->player_timer[i] = 0.0;
     }
     generateBullets(p->bullet_count);
     p->pause = false;
@@ -159,11 +164,13 @@ void Game::render(sf::RenderWindow& w)
 void Game::step(float t, const sf::Input& input)
 {
     if (p->pause || isGameOver())
-        return;
-    
+        return;    
    
     /* move player */
     FOREACH_PLAYER(i) {
+        if (!p->player[i].isAlive())
+            continue;
+        
         PlayerInput pi;
         PlayerKeymap *km = &keymap[i];
         pi.up = input.IsKeyDown(km->up);
@@ -233,8 +240,10 @@ void Game::step(float t, const sf::Input& input)
     
     int alive = 0;
     FOREACH_PLAYER(i) {
-        if (p->player[i].isAlive())
+        if (p->player[i].isAlive()) {
+            p->player_timer[i] += t;
             ++alive;
+        }
     }
     if (!alive)
         p->gameover_event();
@@ -281,6 +290,14 @@ void Game::togglePause()
 float Game::getTime() const
 {
     return p->game_timer;
+}
+
+float Game::getPlayerTime(unsigned int n) const
+{
+    if (n < PLAYER_COUNT)
+        return p->player_timer[n];
+    else
+        return 0.0;
 }
 
 bool Game::isGameOver() const

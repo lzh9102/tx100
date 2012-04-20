@@ -9,6 +9,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#define PLAYER_COUNT 2
+
 class Game
 {
 public:
@@ -51,6 +53,7 @@ public:
      * Return the time since the game starts (in seconds).
      */
     float getTime() const;
+    float getPlayerTime(unsigned int n) const;
     bool isGameOver() const;
     
 private:

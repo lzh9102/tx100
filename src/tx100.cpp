@@ -12,9 +12,10 @@
 #include <cstdlib>
 #include <ctime>
 #include "game.h"
+#include "menu.h"
 
 #define RANDOM_SEED time(0)
-#define BULLET_COUNT_DEFAULT 50
+#define BULLET_COUNT_DEFAULT 80
 #define BULLET_COUNT_MIN 10
 #define BULLET_COUNT_MAX 150
 
@@ -40,14 +41,34 @@ int main(int argc, char** argv)
     return event_loop(mainwindow);
 }
 
-int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
+void game_start(Game& game, Menu& mainmenu)
+{
+    switch (mainmenu.getSelection()) {
+        case 0: /* play alone */
+            game.setPlayerType(0, Game::HUMAN);
+            game.setPlayerType(1, Game::OFF);
+            break;
+        case 1: /* play with computer */
+            game.setPlayerType(0, Game::HUMAN);
+            game.setPlayerType(1, Game::COMPUTER);
+            break;
+        case 2: /* play with human */
+            game.setPlayerType(0, Game::HUMAN);
+            game.setPlayerType(1, Game::HUMAN);
+            break;
+    }
+    game.setBulletCount(bullet_count);
+    game.setPlayerType(0, Game::HUMAN);
+    game.restart();
+    game_state = STATE_INGAME;
+}
+
+int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow,
+        Menu& mainmenu) {
     if (keycode == sf::Key::Return) {
         switch (game_state) {
             case STATE_WAIT:
-                game.setBulletCount(bullet_count);
-                game.setPlayerType(0, Game::HUMAN);
-                game.restart();
-                game_state = STATE_INGAME;
+                game_start(game, mainmenu);
                 break;
             case STATE_INGAME:
                 game.togglePause();
@@ -56,9 +77,18 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
                 game_state = STATE_WAIT;
         }
     } else if (keycode == sf::Key::Escape) {
-        mainwindow.Close();
+        if (game_state == STATE_INGAME)
+            game_state = STATE_WAIT;
+        else
+            mainwindow.Close();
     } else if (game_state == STATE_WAIT) {
         switch (keycode) {
+            case sf::Key::Up:
+                mainmenu.up();
+                break;
+            case sf::Key::Down:
+                mainmenu.down();
+                break;
             case sf::Key::Left: /* decrement bullet count */
                 --bullet_count;
                 break;
@@ -83,8 +113,10 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow) {
 std::string get_statistics(Game& game)
 {
     std::ostringstream s;
-    s << std::setiosflags(std::ios::fixed) << std::setprecision(2)
-            << "Time: " << game.getTime();
+    for (int i=0; i<PLAYER_COUNT; i++) {
+        s << std::setiosflags(std::ios::fixed) << std::setprecision(2)
+                << "Player " << (i+1) << " : " << game.getPlayerTime(i) << std::endl;
+    }
     return s.str();
 }
 
@@ -103,9 +135,9 @@ void text_center(sf::String& text, sf::RenderWindow& window)
 }
 
 /* s.top = ref.bottom */
-void text_align_bottom(const sf::String& ref, sf::String& s)
+void text_align_bottom(sf::String& s, const sf::FloatRect& rect)
 {
-    s.SetY(ref.GetRect().Bottom);
+    s.SetY(rect.Bottom);
 }
 
 int event_loop(sf::RenderWindow& mainwindow)
@@ -113,22 +145,25 @@ int event_loop(sf::RenderWindow& mainwindow)
     const int width = mainwindow.GetWidth(), height = mainwindow.GetHeight();
     int repeat = 0;
     Game game(width, height);
+    Menu mainmenu(mainwindow);
     sf::Clock clock;
-    sf::String wait_text("Press \"Enter\" to start the game.");
     sf::String bullet_count_text("");
     sf::String gameover_text("Game Over");
     sf::String stat_text("");
     
     /* center text */
-    text_center(wait_text, mainwindow);
     text_center(gameover_text, mainwindow);
+    
+    mainmenu.append("Play Alone");
+    mainmenu.append("Play with Computer");
+    mainmenu.append("Play with Human");
     
     while (mainwindow.IsOpened()) {
         sf::Event event;
         while (mainwindow.GetEvent(event)) { /* window event handling */
             switch (event.Type) {
                 case sf::Event::KeyPressed:
-                    window_keypress(event.Key.Code, game, mainwindow);
+                    window_keypress(event.Key.Code, game, mainwindow, mainmenu);
                     break;
                 case sf::Event::Closed: /* window close event */
                     mainwindow.Close();
@@ -156,22 +191,23 @@ int event_loop(sf::RenderWindow& mainwindow)
                 game_state = STATE_GAMEOVER;
                 stat_text.SetText(get_statistics(game));
                 text_center(stat_text, mainwindow);
-                text_align_bottom(gameover_text, stat_text);
+                text_align_bottom(stat_text, gameover_text.GetRect());
             }
         }
         
         clock.Reset();
         mainwindow.Clear(sf::Color::Black);
-        game.render(mainwindow);
         
-        if (game_state == STATE_WAIT) {
+        if (game_state == STATE_INGAME) {
+            game.render(mainwindow);
+        } else if (game_state == STATE_WAIT) {
             bullet_count_text.SetText(get_bullet_count_text(bullet_count));
-            text_center(wait_text, mainwindow);
             text_center(bullet_count_text, mainwindow);
-            text_align_bottom(wait_text, bullet_count_text);
-            mainwindow.Draw(wait_text);
+            text_align_bottom(bullet_count_text, mainmenu.getRect());
             mainwindow.Draw(bullet_count_text);
+            mainmenu.render();
         } else if (game_state == STATE_GAMEOVER) {
+            game.render(mainwindow);
             mainwindow.Draw(gameover_text);
             mainwindow.Draw(stat_text);
         }
