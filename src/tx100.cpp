@@ -115,9 +115,23 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow,
 std::string get_statistics(Game& game)
 {
     std::ostringstream s;
+    
+    /* sort player by score */
+    int player[PLAYER_COUNT];
+    for (int i=0; i<PLAYER_COUNT; i++)
+        player[i] = i;
     for (int i=0; i<PLAYER_COUNT; i++) {
+        for (int j=0; j<PLAYER_COUNT; j++) {
+            if (i!=j && game.getPlayerTime(player[i]) > game.getPlayerTime(player[j]))
+                std::swap(player[i], player[j]);
+        }
+    }    
+    
+    for (int i=0; i<PLAYER_COUNT; i++) {
+        const int index = player[i];
         s << std::setiosflags(std::ios::fixed) << std::setprecision(2)
-                << "Player " << (i+1) << " : " << game.getPlayerTime(i) << std::endl;
+                << "Player " << (index+1) << " : " << game.getPlayerTime(index) 
+                << " sec" << std::endl;
     }
     return s.str();
 }
