@@ -70,7 +70,10 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow,
     if (keycode == sf::Key::Return) {
         switch (game_state) {
             case STATE_WAIT:
-                game_start(game, mainmenu);
+                if (mainmenu.getSelection() == 3) /* quit */
+                    mainwindow.Close();
+                else
+                    game_start(game, mainmenu);
                 break;
             case STATE_INGAME:
                 game.togglePause();
@@ -173,6 +176,7 @@ int event_loop(sf::RenderWindow& mainwindow)
     mainmenu.append("Play Alone");
     mainmenu.append("Play with Computer");
     mainmenu.append("Play with Human (P2: RDFG)");
+    mainmenu.append("Quit");
     
     while (mainwindow.IsOpened()) {
         sf::Event event;
@@ -219,7 +223,7 @@ int event_loop(sf::RenderWindow& mainwindow)
         } else if (game_state == STATE_WAIT) {
             bullet_count_text.SetText(get_bullet_count_text(bullet_count));
             text_center(bullet_count_text, mainwindow);
-            text_align_bottom(bullet_count_text, mainmenu.getRect());
+            bullet_count_text.SetY(mainmenu.getRect().Bottom + 20);
             mainwindow.Draw(bullet_count_text);
             mainmenu.render();
         } else if (game_state == STATE_GAMEOVER) {
