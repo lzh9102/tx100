@@ -158,7 +158,7 @@ int event_loop(sf::RenderWindow& mainwindow)
     
     mainmenu.append("Play Alone");
     mainmenu.append("Play with Computer");
-    mainmenu.append("Play with Human");
+    mainmenu.append("Play with Human (P2: RDFG)");
     
     while (mainwindow.IsOpened()) {
         sf::Event event;
