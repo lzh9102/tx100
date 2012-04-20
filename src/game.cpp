@@ -121,8 +121,9 @@ void Game::restart()
 {
     p->bullet_list.clear();
     FOREACH_PLAYER(i) {
-        p->player[i].setX(p->w/2);
-        p->player[i].setY(p->h/2);
+        const float theta = i * 2 * PI / PLAYER_COUNT;
+        p->player[i].setX(p->w/2 + p->player[i].getWidth() * cos(theta));
+        p->player[i].setY(p->h/2 + p->player[i].getWidth() * sin(theta));
         if (p->player_type[i] != OFF)
             p->player[i].start();
         else
