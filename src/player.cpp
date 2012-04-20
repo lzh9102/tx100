@@ -174,3 +174,8 @@ bool Player::setImage(const char* filename)
     p->image.LoadFromFile(filename);
     p->sprite.SetImage(p->image);
 }
+
+const sf::Image& Player::getImage() const
+{
+    return p->image;
+}

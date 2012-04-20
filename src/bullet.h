@@ -8,6 +8,7 @@
 #define	BULLET_H
 
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics.hpp>
 
 #define BULLET_RADIUS 3
 
@@ -26,6 +27,7 @@ public:
     
     bool detectCollision(int x, int y, int rad) const;
     bool detectCollision(sf::Vector2f p, int rad) const;
+    bool detectCollision(sf::Vector2f p, const sf::Image& img) const;
     
     /**
      * Rebound with respect to the center point.

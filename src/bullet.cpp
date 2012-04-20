@@ -7,6 +7,7 @@
 #include "bullet.h"
 #include "vectorhelper.h"
 #include <cmath>
+#include <SFML/Graphics/Image.hpp>
 
 #define ACCEL_RATE 1.5
 #define TRACK_PARAM 120
@@ -38,6 +39,18 @@ bool Bullet::detectCollision(int x, int y, int rad) const
     int dx = std::abs(x - pos.x), dy = std::abs(y - pos.y);
     int mindist = rad + BULLET_RADIUS;
     return dx*dx + dy*dy <= mindist*mindist;
+}
+
+bool Bullet::detectCollision(sf::Vector2f p, const sf::Image& img) const
+{
+    /* collide if the pixel is not transparent */
+    int img_width = img.GetWidth(), img_height = img.GetHeight();
+    int img_x = pos.x - p.x + img_width / 2, img_y = pos.y - p.y + img_height / 2;
+    if (img_x < 0 || img_x >= img_width)
+        return false;
+    if (img_y < 0 || img_y >= img_height)
+        return false;
+    return img.GetPixel(img_x, img_y).a != 0;
 }
 
 bool Bullet::detectCollision(sf::Vector2f p, int rad) const

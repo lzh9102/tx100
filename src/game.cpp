@@ -122,6 +122,8 @@ void Game::restart()
         p->player[i].setY(p->h/2);
         if (p->player_type[i] != OFF)
             p->player[i].start();
+        else
+            p->player[i].stop();
         p->player_timer[i] = 0.0;
     }
     generateBullets(p->bullet_count);
@@ -206,14 +208,15 @@ void Game::step(float t, const sf::Input& input)
         bullet_it->step(t, BULLET_SPEED, p->player[min_index].getPosition());
         
         FOREACH_PLAYER(index) {
-            Player *player = p->player;
-            int player_radius = player[index].getCriticalRadius();
-            sf::Vector2f player_pos = player[index].getPosition();
-            if (player[index].isAlive()) {
-                bool collision = bullet_it->detectCollision(player_pos, player_radius);
+            Player& player = p->player[index];
+            const sf::Image& image = player.getImage();
+            int player_radius = player.getCriticalRadius();
+            sf::Vector2f player_pos = player.getPosition();
+            if (player.isAlive()) {
+                bool collision = bullet_it->detectCollision(player_pos, image);
 
                 if (collision) {
-                    player[index].stop();
+                    player.stop();
                     bullet_it = p->bullet_list.erase(bullet_it);
                     continue;
                 } else if (!vector_is_in_range(bullet_it->pos, 0, 0, p->w, p->h)){

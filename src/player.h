@@ -48,6 +48,8 @@ public:
     
     bool setImage(const char *filename);
     
+    const sf::Image& getImage() const;
+    
 private:
     // disable copy
     Player(const Player&);

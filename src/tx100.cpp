@@ -58,7 +58,6 @@ void game_start(Game& game, Menu& mainmenu)
             break;
     }
     game.setBulletCount(bullet_count);
-    game.setPlayerType(0, Game::HUMAN);
     game.restart();
     game_state = STATE_INGAME;
 }
