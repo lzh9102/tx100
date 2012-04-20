@@ -88,7 +88,7 @@ void Player::step(float t, const std::list<Bullet>& bullet_list,
         //    normal = sf::Vector2f(0, 0);
         normal /= (float)0.05 * distance;
         if (distance < 2 * getWidth())
-            normal *= (float)50.0;
+            normal *= (float)500.0;
         if (vector_dot(difference, normal) < 0)
             normal = -normal;
         //if (vector_length(v + normal) < 0.1)
@@ -98,12 +98,12 @@ void Player::step(float t, const std::list<Bullet>& bullet_list,
         }
 
         if (distance < 2 * getWidth())
-            v += (vector_normalize(difference) / distance * (float)100.0);
+            v += (vector_normalize(difference) / distance * (float)1000.0);
     }
     
     sf::Vector2f deviation = center - p->pos;
     if (vector_length(deviation) >= 100)
-        v += vector_normalize(deviation) * (float)1.5;
+        v += deviation * (float)0.01;
     
     if (vector_length(v) >= t)
         p->pos += vector_normalize(v) * PLAYER_SPEED * t;
