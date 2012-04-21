@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <ctime>
+#include <cstdio>
 #include "game.h"
 #include "menu.h"
 
@@ -22,7 +23,8 @@
 #define BULLET_COUNT_MIN 10
 #define BULLET_COUNT_MAX 150
 
-int event_loop(sf::RenderWindow& mainwindow);
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 
 enum {
     STATE_WAIT,
@@ -32,17 +34,6 @@ enum {
 
 int bullet_count = BULLET_COUNT_DEFAULT;
 int game_state = STATE_WAIT;
-
-int main(int argc, char** argv)
-{
-    sf::RenderWindow mainwindow(sf::VideoMode(800, 600), "TX100 ("
-            "http://code.google.com/p/tx100" ")",
-            sf::Style::Close);
-    
-    srand(RANDOM_SEED);
-    
-    return event_loop(mainwindow);
-}
 
 void game_start(Game& game, Menu& mainmenu)
 {
@@ -236,4 +227,55 @@ int event_loop(sf::RenderWindow& mainwindow)
         //sf::Sleep(0.1);
     }
     return 0;
+}
+
+#define SIM_STEP 0.01
+bool simulation(int n_bullet, int time_limit, int width=WINDOW_WIDTH,
+        int height=WINDOW_HEIGHT)
+{
+    Game game(width, height);
+    game.setBulletCount(n_bullet);
+    game.setPlayerType(0, Game::COMPUTER);
+    game.setPlayerType(1, Game::OFF);
+    
+    game.restart();
+    for (float t=0; t<time_limit; t+=SIM_STEP) {
+        game.step(SIM_STEP, sf::Input());
+        if (game.isGameOver())
+            break;
+    }
+    
+    std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2) <<
+            game.getPlayerTime(0) << std::endl;
+    
+    return game.isGameOver();
+}
+
+int main(int argc, char** argv)
+{
+    if (argc > 1) {
+        int nbullets = BULLET_COUNT_DEFAULT;
+        int seed = RANDOM_SEED;
+        int time_limit = 1000;
+        if (std::string(argv[1]) != "-s")
+            return -1;
+        if (argc >= 3)
+            nbullets = std::atoi(argv[2]);
+        if (argc >= 4)
+            seed = std::atoi(argv[3]);
+        
+        fprintf(stderr, "n_bullet=%d, time_limit=%d, ", nbullets, time_limit);
+        fprintf(stderr, "seed=%d\n", seed);
+        
+        srand(seed);
+        simulation(nbullets, time_limit);
+    } else {
+        sf::RenderWindow mainwindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT),
+                "TX100 (http://code.google.com/p/tx100)",
+                sf::Style::Close);
+
+        srand(RANDOM_SEED);
+
+        return event_loop(mainwindow);
+    }
 }
