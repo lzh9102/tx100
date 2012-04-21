@@ -34,6 +34,7 @@ enum {
 
 int bullet_count = BULLET_COUNT_DEFAULT;
 int game_state = STATE_WAIT;
+bool show_timer = false;
 
 void game_start(Game& game, Menu& mainmenu)
 {
@@ -103,6 +104,8 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow,
         else if (bullet_count > BULLET_COUNT_MAX)
             bullet_count = BULLET_COUNT_MAX;
         game.setBulletCount(bullet_count);
+    } else if (game_state == STATE_INGAME && keycode == sf::Key::F4) {
+        show_timer = !show_timer; /* toggle show timer */
     }
 }
 
@@ -150,6 +153,14 @@ void text_align_bottom(sf::String& s, const sf::FloatRect& rect)
     s.SetY(rect.Bottom);
 }
 
+template <class T>
+std::string tostr(const T& obj, int precision=2)
+{
+    std::ostringstream s;
+    s << std::setiosflags(std::ios::fixed) << std::setprecision(precision) << obj;
+    return s.str();
+}
+
 int event_loop(sf::RenderWindow& mainwindow)
 {
     const int width = mainwindow.GetWidth(), height = mainwindow.GetHeight();
@@ -160,6 +171,7 @@ int event_loop(sf::RenderWindow& mainwindow)
     sf::String bullet_count_text("");
     sf::String gameover_text("Game Over");
     sf::String stat_text("");
+    sf::String timer_text;
     
     /* center text */
     text_center(gameover_text, mainwindow);
@@ -189,6 +201,7 @@ int event_loop(sf::RenderWindow& mainwindow)
         float interval = clock.GetElapsedTime();
         
         repeat = 1;
+        interval=0.02;
         
         if (mainwindow.GetInput().IsKeyDown(sf::Key::F2))
             interval /= 5;
@@ -198,6 +211,7 @@ int event_loop(sf::RenderWindow& mainwindow)
         if (game_state == STATE_INGAME) {
             for (int i=0; i<repeat; i++)
                 game.step(interval, mainwindow.GetInput());
+            timer_text.SetText(tostr(game.getTime()));
             if (game.isGameOver()) {
                 game_state = STATE_GAMEOVER;
                 stat_text.SetText(get_statistics(game));
@@ -211,6 +225,8 @@ int event_loop(sf::RenderWindow& mainwindow)
         
         if (game_state == STATE_INGAME) {
             game.render(mainwindow);
+            if (show_timer)
+                mainwindow.Draw(timer_text);
         } else if (game_state == STATE_WAIT) {
             bullet_count_text.SetText(get_bullet_count_text(bullet_count));
             text_center(bullet_count_text, mainwindow);
@@ -224,19 +240,18 @@ int event_loop(sf::RenderWindow& mainwindow)
         }
         
         mainwindow.Display();
-        //sf::Sleep(0.1);
     }
     return 0;
 }
 
-#define SIM_STEP 0.01
+#define SIM_STEP 0.02
 bool simulation(int n_bullet, int time_limit, int width=WINDOW_WIDTH,
         int height=WINDOW_HEIGHT)
 {
     Game game(width, height);
     game.setBulletCount(n_bullet);
-    game.setPlayerType(0, Game::COMPUTER);
-    game.setPlayerType(1, Game::OFF);
+    game.setPlayerType(0, Game::HUMAN); /* simulate human vs computer */
+    game.setPlayerType(1, Game::COMPUTER);
     
     game.restart();
     for (float t=0; t<time_limit; t+=SIM_STEP) {
@@ -246,7 +261,7 @@ bool simulation(int n_bullet, int time_limit, int width=WINDOW_WIDTH,
     }
     
     std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2) <<
-            game.getPlayerTime(0) << std::endl;
+            game.getPlayerTime(1) << std::endl;
     
     return game.isGameOver();
 }
