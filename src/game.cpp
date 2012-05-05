@@ -8,7 +8,6 @@
  */
 
 #include "game.h"
-#include "player.h"
 #include "bullet.h"
 #include "vectorhelper.h"
 #include <ctime>
@@ -26,28 +25,13 @@
 
 #define FOREACH_PLAYER(iter) for (int iter=0; iter<PLAYER_COUNT; ++iter)
 
-namespace {
-    struct PlayerKeymap {
-        sf::Key::Code up;
-        sf::Key::Code down;
-        sf::Key::Code left;
-        sf::Key::Code right;
-    };
-    /* Keymap for the players */
-    PlayerKeymap keymap[PLAYER_COUNT] = {
-        /* {up, down, left, right} */
-        {sf::Key::Up, sf::Key::Down, sf::Key::Left, sf::Key::Right},
-        {sf::Key::R, sf::Key::F, sf::Key::D, sf::Key::G}
-    };
-}
-
 struct Game::Private
 {
     std::list<Bullet> bullet_list;
     Player player[PLAYER_COUNT];
     sf::Shape bullet_shape;
     sf::String str_pause;
-    PlayerInput prev_input;
+    PlayerInput player_input[PLAYER_COUNT];
     sf::Vector2f center;
     float bullet_timer;
     float game_timer;
@@ -167,7 +151,13 @@ void Game::render(sf::RenderWindow& w)
     }
 }
 
-void Game::step(float t, const sf::Input& input)
+void Game::setPlayerInput(unsigned int n, const PlayerInput& input)
+{
+    if (n >= 0 && n < PLAYER_COUNT)
+        p->player_input[n] = input;
+}
+
+void Game::step(float t)
 {
     if (p->pause || isGameOver())
         return;    
@@ -177,12 +167,7 @@ void Game::step(float t, const sf::Input& input)
         if (!p->player[i].isAlive())
             continue;
         
-        PlayerInput pi;
-        PlayerKeymap *km = &keymap[i];
-        pi.up = input.IsKeyDown(km->up);
-        pi.down = input.IsKeyDown(km->down);
-        pi.left = input.IsKeyDown(km->left);
-        pi.right = input.IsKeyDown(km->right);
+        PlayerInput& pi = p->player_input[i];
         
         Player *player = p->player;
         if (p->player_type[i] == COMPUTER)

@@ -26,6 +26,21 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+namespace {
+
+struct PlayerKeymap {
+    sf::Key::Code up;
+    sf::Key::Code down;
+    sf::Key::Code left;
+    sf::Key::Code right;
+};
+
+PlayerKeymap keymap[PLAYER_COUNT] = {
+    /* {up, down, left, right} */
+    {sf::Key::Up, sf::Key::Down, sf::Key::Left, sf::Key::Right},
+    {sf::Key::R, sf::Key::F, sf::Key::D, sf::Key::G}
+};
+
 enum {
     STATE_WAIT,
     STATE_INGAME,
@@ -35,6 +50,8 @@ enum {
 int bullet_count = BULLET_COUNT_DEFAULT;
 int game_state = STATE_WAIT;
 bool show_timer = false;
+
+}
 
 void game_start(Game& game, Menu& mainmenu)
 {
@@ -198,19 +215,31 @@ int event_loop(sf::RenderWindow& mainwindow)
             }
         }
         
+        const sf::Input& input = mainwindow.GetInput();
         float interval = clock.GetElapsedTime();
         
         repeat = 1;
         interval=0.02;
         
-        if (mainwindow.GetInput().IsKeyDown(sf::Key::F2))
+        if (input.IsKeyDown(sf::Key::F2))
             interval /= 5;
-        else if (mainwindow.GetInput().IsKeyDown(sf::Key::F3))
+        else if (input.IsKeyDown(sf::Key::F3))
             repeat = 5;
         
         if (game_state == STATE_INGAME) {
+            PlayerInput pi;
+            
+            for (int i=0; i<PLAYER_COUNT; i++) {
+                PlayerKeymap *km = &keymap[i];
+                pi.up = input.IsKeyDown(km->up);
+                pi.down = input.IsKeyDown(km->down);
+                pi.left = input.IsKeyDown(km->left);
+                pi.right = input.IsKeyDown(km->right);
+                game.setPlayerInput(i, pi);
+            }
+            
             for (int i=0; i<repeat; i++)
-                game.step(interval, mainwindow.GetInput());
+                game.step(interval);
             timer_text.SetText(tostr(game.getTime()));
             if (game.isGameOver()) {
                 game_state = STATE_GAMEOVER;
@@ -255,7 +284,7 @@ bool simulation(int n_bullet, int time_limit, int width=WINDOW_WIDTH,
     
     game.restart();
     for (float t=0; t<time_limit; t+=SIM_STEP) {
-        game.step(SIM_STEP, sf::Input());
+        game.step(SIM_STEP);
         if (game.isGameOver())
             break;
     }

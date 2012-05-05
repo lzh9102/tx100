@@ -11,6 +11,7 @@
 #define	GAME_H
 
 #include <SFML/Graphics.hpp>
+#include "player.h"
 
 #define PLAYER_COUNT 2
 
@@ -37,11 +38,13 @@ public:
      */
     void render(sf::RenderWindow& w);
     
+    void setPlayerInput(unsigned int n, const PlayerInput& input);
+    
     /**
      * Run the game for t seconds.
      * @param t
      */
-    void step(float t, const sf::Input& input);
+    void step(float t);
     
     void generateBullets(int count);
     
