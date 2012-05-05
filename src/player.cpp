@@ -31,6 +31,12 @@ struct Player::Private
         sprite.SetPosition(x, y);
         w.Draw(sprite);
     }
+    
+    void render(sf::RenderWindow& w, int x, int y)
+    {
+        sprite.SetPosition(x - image.GetWidth() / 2, y - image.GetHeight() / 2);
+        w.Draw(sprite);
+    }
 };
 
 Player::Player() : p(new Private)
@@ -56,6 +62,12 @@ void Player::render(sf::RenderWindow& w)
 {
     if (p->alive)
         p->render(w);
+}
+
+void Player::render(sf::RenderWindow& w, int x, int y)
+{
+    if (p->alive)
+        p->render(w, x, y);
 }
 
 void Player::step(float t, const PlayerInput& input)
@@ -142,6 +154,12 @@ float Player::setX(float x)
 float Player::setY(float y)
 {
     return p->pos.y = y;
+}
+
+void Player::setPosition(float x, float y)
+{
+    p->pos.x = x;
+    p->pos.y = y;
 }
 
 void Player::constraint(int w, int h)

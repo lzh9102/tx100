@@ -62,6 +62,15 @@ public:
     float getPlayerTime(unsigned int n) const;
     bool isGameOver() const;
     
+    /* Write the encoded game status to the bytearray for transmission.
+     * The buffer v must be large enough to hold the game status.
+     * The maxlen parameter is just for debugging, the function does not check
+     * whether data length exceed maxlen.
+     */
+    int encodeStatus(unsigned char *v, int maxlen) const;
+    
+    void renderStatus(const unsigned char *v, int len, sf::RenderWindow& w);
+    
 private:
     // disable copy
     Game(const Game&);

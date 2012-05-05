@@ -30,6 +30,9 @@ public:
     
     virtual void render(sf::RenderWindow& w);
     
+    /* render the player at position (x,y) */
+    virtual void render(sf::RenderWindow& w, int x, int y);
+    
     virtual void step(float t, const PlayerInput& input);
     
     /* autoplay */
@@ -42,6 +45,7 @@ public:
     sf::Vector2f getPosition() const;
     float setX(float x);
     float setY(float y);
+    void setPosition(float x, float y);
     
     void constraint(int w, int h);
     

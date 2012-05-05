@@ -78,6 +78,21 @@ struct Game::Private
         }
         return 0;
     }
+    void render_bullet(const Bullet& bullet, sf::RenderWindow& w)
+    {
+        bullet_shape.SetPosition(bullet.pos);
+        switch (bullet.type) {
+            case Bullet::NORMAL:
+                bullet_shape.SetColor(sf::Color::Yellow); break;
+            case Bullet::ACCELERATING:
+                bullet_shape.SetColor(sf::Color::Green); break;
+            case Bullet::TRACKING:
+                bullet_shape.SetColor(sf::Color::Red); break;
+        }
+        //if (it->type == Bullet::TRACKING && !draw_missile)
+        //    continue;
+        w.Draw(bullet_shape);
+    }
 };
 
 Game::Game(int width, int height) : p(new Private(width, height))
@@ -132,18 +147,7 @@ void Game::render(sf::RenderWindow& w)
     std::list<Bullet>::iterator it;
     //bool draw_missile = (p->game_timer*3 - std::floor(p->game_timer*3)) > 0.3; /* blink */
     for (it=p->bullet_list.begin(); it!=p->bullet_list.end(); ++it) {
-        p->bullet_shape.SetPosition(it->pos);
-        switch (it->type) {
-            case Bullet::NORMAL:
-                p->bullet_shape.SetColor(sf::Color::Yellow); break;
-            case Bullet::ACCELERATING:
-                p->bullet_shape.SetColor(sf::Color::Green); break;
-            case Bullet::TRACKING:
-                p->bullet_shape.SetColor(sf::Color::Red); break;
-        }
-        //if (it->type == Bullet::TRACKING && !draw_missile)
-        //    continue;
-        w.Draw(p->bullet_shape);
+        p->render_bullet(*it, w);
     }
     
     if (p->pause) {
@@ -295,4 +299,66 @@ float Game::getPlayerTime(unsigned int n) const
 bool Game::isGameOver() const
 {
     return p->gameover;
+}
+
+#define HIGH_BYTE(word) (((word) & 0xff00) >> 8)
+#define LOW_BYTE(word) ((word) & 0xff)
+
+int Game::encodeStatus(unsigned char *v, int maxlen) const
+{
+    *v++ = PLAYER_COUNT;
+    for(int i=0; i<PLAYER_COUNT; i++) {
+        const Player& player = p->player[i];
+        char status = player.isAlive();
+        int x = player.getX(), y = player.getY();
+        *v++ = status;
+        *v++ = HIGH_BYTE(x);
+        *v++ = LOW_BYTE(x);
+        *v++ = HIGH_BYTE(y);
+        *v++ = LOW_BYTE(y);
+    }
+    *v++ = p->bullet_list.size();
+    std::list<Bullet>::const_iterator it = p->bullet_list.begin();
+    for (; it!=p->bullet_list.end(); ++it) {
+        int type = it->type;
+        int x = it->pos.x, y = it->pos.y;
+        *v++ = type;
+        *v++ = HIGH_BYTE(x);
+        *v++ = LOW_BYTE(x);
+        *v++ = HIGH_BYTE(y);
+        *v++ = LOW_BYTE(y);
+    }
+}
+
+void Game::renderStatus(const unsigned char *v, int len, sf::RenderWindow& w)
+{
+    int player_count = *v++;
+    for (int i=0; i<player_count; i++) {
+        char status;
+        int x, y;
+        status = *v++;
+        x = *v++ << 8;
+        x |= *v++;
+        y = *v++ << 8;
+        y |= *v++;
+        if (status) { /* isAlive */
+            /* Don't move the player, just render it at the position. */
+            p->player[i].render(w, x, y);
+        }
+    }
+    int bullet_count = *v++;
+    Bullet bullet;
+    for (int i=0; i<bullet_count; i++) {
+        int type;
+        int x, y;
+        type = *v++;
+        x = *v++ << 8;
+        x |= *v++;
+        y = *v++ << 8;
+        y |= *v++;
+        bullet.type = type;
+        bullet.pos.x = x;
+        bullet.pos.y = y;
+        p->render_bullet(bullet, w);
+    }
 }
