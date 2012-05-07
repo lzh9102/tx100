@@ -217,6 +217,7 @@ int event_loop(sf::RenderWindow& mainwindow)
         
         const sf::Input& input = mainwindow.GetInput();
         float interval = clock.GetElapsedTime();
+        clock.Reset();
         
         repeat = 1;
         interval=0.02;
@@ -249,7 +250,6 @@ int event_loop(sf::RenderWindow& mainwindow)
             }
         }
         
-        clock.Reset();
         mainwindow.Clear(sf::Color::Black);
         
         if (game_state == STATE_INGAME) {
