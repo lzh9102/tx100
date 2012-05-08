@@ -49,13 +49,11 @@ public:
     
     void constraint(int w, int h);
     
-    int getCriticalRadius() const;
-    
     bool isAlive() const;
     
     bool setImage(const char *filename);
     
-    const sf::Image& getImage() const;
+    const sf::Sprite& getSprite() const;
     
 private:
     // disable copy

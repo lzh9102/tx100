@@ -26,15 +26,13 @@ struct Player::Private
     
     void render(sf::RenderWindow& w)
     {
-        const int x = pos.x - image.GetWidth() / 2;
-        const int y = pos.y - image.GetHeight() / 2;
-        sprite.SetPosition(x, y);
-        w.Draw(sprite);
+        render(w, pos.x, pos.y);
     }
     
     void render(sf::RenderWindow& w, int x, int y)
     {
-        sprite.SetPosition(x - image.GetWidth() / 2, y - image.GetHeight() / 2);
+        const int width = sprite.GetSize().x, height = sprite.GetSize().y;
+        sprite.SetPosition(x - width / 2, y - height / 2);
         w.Draw(sprite);
     }
 };
@@ -133,12 +131,12 @@ float Player::getY() const
 
 int Player::getWidth() const
 {
-    return p->image.GetWidth();
+    return p->sprite.GetSize().x;
 }
 
 int Player::getHeight() const
 {
-    return p->image.GetHeight();
+    return p->sprite.GetSize().y;
 }
 
 sf::Vector2f Player::getPosition() const
@@ -164,7 +162,7 @@ void Player::setPosition(float x, float y)
 
 void Player::constraint(int w, int h)
 {
-    const int player_width = p->image.GetWidth(), player_height = p->image.GetHeight();
+    const int player_width = getWidth(), player_height = getHeight();
     const int top_limit = player_height/2, bottom_limit = h - player_height/2;
     const int left_limit = player_width/2, right_limit = w - player_width/2;
     const int x = p->pos.x, y = p->pos.y;
@@ -179,12 +177,6 @@ void Player::constraint(int w, int h)
         p->pos.y = bottom_limit;
 }
 
-int Player::getCriticalRadius() const
-{
-    /* be more permissive */
-    return std::min(p->image.GetWidth(), p->image.GetHeight()) / (SQRT_2 * 2);
-}
-
 bool Player::isAlive() const
 {
     return p->alive;
@@ -196,7 +188,7 @@ bool Player::setImage(const char* filename)
     p->sprite.SetImage(p->image);
 }
 
-const sf::Image& Player::getImage() const
+const sf::Sprite& Player::getSprite() const
 {
-    return p->image;
+    return p->sprite;
 }

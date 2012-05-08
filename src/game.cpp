@@ -202,11 +202,10 @@ void Game::step(float t)
         
         FOREACH_PLAYER(index) {
             Player& player = p->player[index];
-            const sf::Image& image = player.getImage();
-            int player_radius = player.getCriticalRadius();
+            const sf::Sprite& sprite = player.getSprite();
             sf::Vector2f player_pos = player.getPosition();
             if (player.isAlive()) {
-                bool collision = bullet_it->detectCollision(player_pos, image);
+                bool collision = bullet_it->detectCollision(player_pos, sprite);
 
                 if (collision) {
                     player.stop();

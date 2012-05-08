@@ -30,7 +30,7 @@ public:
     
     bool detectCollision(int x, int y, int rad) const;
     bool detectCollision(sf::Vector2f p, int rad) const;
-    bool detectCollision(sf::Vector2f p, const sf::Image& img) const;
+    bool detectCollision(sf::Vector2f p, const sf::Sprite& img) const;
     
     /**
      * Rebound with respect to the center point.

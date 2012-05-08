@@ -44,16 +44,16 @@ bool Bullet::detectCollision(int x, int y, int rad) const
     return dx*dx + dy*dy <= mindist*mindist;
 }
 
-bool Bullet::detectCollision(sf::Vector2f p, const sf::Image& img) const
+bool Bullet::detectCollision(sf::Vector2f p, const sf::Sprite& sprite) const
 {
     /* collide if the pixel is not transparent */
-    int img_width = img.GetWidth(), img_height = img.GetHeight();
+    int img_width = sprite.GetSize().x, img_height = sprite.GetSize().y;
     int img_x = pos.x - p.x + img_width / 2, img_y = pos.y - p.y + img_height / 2;
     if (img_x < 0 || img_x >= img_width)
         return false;
     if (img_y < 0 || img_y >= img_height)
         return false;
-    return img.GetPixel(img_x, img_y).a != 0;
+    return sprite.GetPixel(img_x, img_y).a != 0;
 }
 
 bool Bullet::detectCollision(sf::Vector2f p, int rad) const
