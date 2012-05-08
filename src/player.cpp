@@ -7,7 +7,7 @@
  * http://code.google.com/p/tx100
  */
 
-#define PLAYER_SPEED (float)100
+#define PLAYER_SPEED (float)130
 
 #include "player.h"
 #include "vectorhelper.h"
