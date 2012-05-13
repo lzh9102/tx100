@@ -297,9 +297,9 @@ bool simulation(int n_bullet, int time_limit, int width=WINDOW_WIDTH,
 
 int main(int argc, char** argv)
 {
-    if (argc > 1) {
+    int seed = RANDOM_SEED;
+    if (argc > 1) { /* simulation mode */
         int nbullets = BULLET_COUNT_DEFAULT;
-        int seed = RANDOM_SEED;
         int time_limit = 1000;
         if (std::string(argv[1]) != "-s")
             return -1;
@@ -313,12 +313,13 @@ int main(int argc, char** argv)
         
         srand(seed);
         simulation(nbullets, time_limit);
-    } else {
+    } else { /* game mode */
         sf::RenderWindow mainwindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT),
                 "TX100 (http://code.google.com/p/tx100)",
                 sf::Style::Close);
 
-        srand(RANDOM_SEED);
+        srand(seed);
+        fprintf(stderr, "seed: %d\n", seed);
 
         return event_loop(mainwindow);
     }
