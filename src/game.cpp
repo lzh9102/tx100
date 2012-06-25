@@ -55,7 +55,7 @@ struct Game::Private
         str_pause.SetColor(sf::Color::Red);
         FOREACH_PLAYER(i) {
             char filename[100];
-            sprintf(filename, DATA_PATH "player%d.png", i+1);
+            sprintf(filename, DATA_PATH "/player%d.png", i+1);
             player[i].setImage(filename);
             player[i].stop();
             player_type[i] = OFF;

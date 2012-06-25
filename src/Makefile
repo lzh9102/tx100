@@ -1,5 +1,6 @@
 
-DATA_PATH=../
+PREFIX=/usr
+DATA_PATH=$(PREFIX)/share/tx100
 
 CXX=g++
 CXXFLAGS=-O3 -Wall
@@ -17,3 +18,12 @@ $(TARGET): $(OBJ)
 clean:
 	rm -f *.o
 	rm -f tx100
+
+install: $(TARGET)
+	install -d $(DESTDIR)$(DATA_PATH)
+	install -m 644 player*.png $(DESTDIR)$(DATA_PATH)
+	install -m 755 tx100 $(DESTDIR)$(PREFIX)/bin/
+
+uninstall:
+	rm -rf $(DESTDIR)$(DATA_PATH)
+	rm -rf $(DESTDIR)$(PREFIX)/bin/tx100
