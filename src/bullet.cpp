@@ -58,7 +58,7 @@ bool Bullet::detectCollision(sf::Vector2f p, const sf::Sprite& sprite) const
 
 bool Bullet::detectCollision(sf::Vector2f p, int rad) const
 {
-    detectCollision(p.x, p.y, rad);
+    return detectCollision(p.x, p.y, rad);
 }
 
 void Bullet::rebound(sf::Vector2f center)

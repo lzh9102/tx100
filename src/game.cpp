@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
+#include <cassert>
 #include "game.h"
 #include "bullet.h"
 #include "vectorhelper.h"
@@ -36,10 +37,10 @@ struct Game::Private
     sf::Vector2f center;
     float bullet_timer;
     float game_timer;
+    int w, h;
     bool pause;
     PlayerType player_type[PLAYER_COUNT];
     float player_timer[PLAYER_COUNT];
-    int w, h;
     int bullet_count;
     bool gameover;
     Private(int width, int height) : w(width), h(height), pause(false)
@@ -227,7 +228,7 @@ void Game::step(float t)
     
     p->bullet_timer += t;
     
-    if (p->bullet_timer > BULLET_GEN_FREQ && p->bullet_list.size() < p->bullet_count) {
+    if (p->bullet_timer > BULLET_GEN_FREQ && (int)p->bullet_list.size() < p->bullet_count) {
         generateBullets(rand() % p->bullet_count + 1);
         p->bullet_timer = 0;
     }
@@ -306,6 +307,7 @@ bool Game::isGameOver() const
 
 int Game::encodeStatus(unsigned char *v, int maxlen) const
 {
+    unsigned char *v0 = v;
     *v++ = PLAYER_COUNT;
     for(int i=0; i<PLAYER_COUNT; i++) {
         const Player& player = p->player[i];
@@ -328,6 +330,8 @@ int Game::encodeStatus(unsigned char *v, int maxlen) const
         *v++ = HIGH_BYTE(y);
         *v++ = LOW_BYTE(y);
     }
+    assert(v - v0 <= maxlen);
+    return v - v0;
 }
 
 void Game::renderStatus(const unsigned char *v, int len, sf::RenderWindow& w)

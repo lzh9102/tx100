@@ -22,9 +22,9 @@ Menu::~Menu() {
 
 void Menu::render()
 {
-    for (int i=0; i<m_list.size(); i++) {
+    for (unsigned int i=0; i<m_list.size(); i++) {
         m_window->Draw(m_list[i]);
-        if (m_sel == i) {
+        if (m_sel == (int)i) {
             sf::FloatRect rect = m_list[i].GetRect();
             sf::Shape polygon;
             polygon.AddPoint(rect.Left, rect.Top, sf::Color::White, sf::Color::White);
@@ -52,7 +52,7 @@ void Menu::append(const char* s)
 
 void Menu::setSelection(int n)
 {
-    if (n >= 0 && n < m_list.size())
+    if (n >= 0 && n < (int)m_list.size())
         m_sel = n;
 }
 
@@ -91,8 +91,8 @@ void Menu::adjust_layout()
     if (m_list.empty())
         return;
     
-    int h = 0, w = 0;
-    for (int i=0; i<m_list.size(); i++) {
+    unsigned int h = 0, w = 0;
+    for (unsigned int i=0; i<m_list.size(); i++) {
         h += m_list[i].GetRect().GetHeight();
         if (m_list[i].GetRect().GetWidth() > w)
             w = m_list[i].GetRect().GetWidth();
@@ -100,7 +100,7 @@ void Menu::adjust_layout()
     }
     
     m_list[0].SetY((m_window->GetHeight() - h) / 2);
-    for (int i=1; i<m_list.size(); i++) {
+    for (unsigned int i=1; i<m_list.size(); i++) {
         text_align_bottom(m_list[i-1], m_list[i]);
     }
     

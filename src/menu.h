@@ -34,9 +34,9 @@ public:
 private:
     Menu(const Menu& orig);
     std::vector<sf::String> m_list;
+    sf::RenderWindow *m_window;
     int m_sel;
     int m_width, m_height;
-    sf::RenderWindow *m_window;
     void adjust_layout();
     void text_center(sf::String& text, sf::RenderWindow& window);
     void text_align_bottom(const sf::String& ref, sf::String& s);

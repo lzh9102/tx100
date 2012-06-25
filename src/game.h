@@ -66,6 +66,7 @@ public:
      * The buffer v must be large enough to hold the game status.
      * The maxlen parameter is just for debugging, the function does not check
      * whether data length exceed maxlen.
+     * @return the length of the returned data
      */
     int encodeStatus(unsigned char *v, int maxlen) const;
     

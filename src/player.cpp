@@ -184,8 +184,10 @@ bool Player::isAlive() const
 
 bool Player::setImage(const char* filename)
 {
-    p->image.LoadFromFile(filename);
+    if (!p->image.LoadFromFile(filename))
+        return false;
     p->sprite.SetImage(p->image);
+    return true;
 }
 
 const sf::Sprite& Player::getSprite() const

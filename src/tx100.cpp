@@ -124,6 +124,7 @@ int window_keypress(int keycode, Game& game, sf::RenderWindow& mainwindow,
     } else if (game_state == STATE_INGAME && keycode == sf::Key::F4) {
         show_timer = !show_timer; /* toggle show timer */
     }
+    return 0;
 }
 
 std::string get_statistics(Game& game)
@@ -211,6 +212,8 @@ int event_loop(sf::RenderWindow& mainwindow)
                 case sf::Event::LostFocus: /* window lost focus */
                     if (game_state == STATE_INGAME)
                         game.pause(true);
+                    break;
+                default:
                     break;
             }
         }
