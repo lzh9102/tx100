@@ -56,7 +56,10 @@ struct Game::Private
         FOREACH_PLAYER(i) {
             char filename[100];
             sprintf(filename, DATA_PATH "/player%d.png", i+1);
-            player[i].setImage(filename);
+            if (!player[i].setImage(filename)) {
+                fprintf(stderr, "error: failed to load image \"%s\"\n", filename);
+                exit(-1);
+            }
             player[i].stop();
             player_type[i] = OFF;
         }
