@@ -220,7 +220,6 @@ int event_loop(sf::RenderWindow& mainwindow)
         clock.Reset();
         
         repeat = 1;
-        interval=0.02;
         
         if (input.IsKeyDown(sf::Key::F2))
             interval /= 5;
