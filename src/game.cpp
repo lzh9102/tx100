@@ -7,14 +7,15 @@
  * http://code.google.com/p/tx100
  */
 
-#include "game.h"
-#include "bullet.h"
-#include "vectorhelper.h"
 #include <ctime>
 #include <list>
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
+#include "game.h"
+#include "bullet.h"
+#include "vectorhelper.h"
+#include "config.h"
 
 #define BULLET_DIR_DEVIATION 10
 #define BULLET_DIST_DEVIATION 30
@@ -53,7 +54,7 @@ struct Game::Private
         str_pause.SetColor(sf::Color::Red);
         FOREACH_PLAYER(i) {
             char filename[100];
-            sprintf(filename, "player%d.png", i+1);
+            sprintf(filename, DATA_PATH "player%d.png", i+1);
             player[i].setImage(filename);
             player[i].stop();
             player_type[i] = OFF;
