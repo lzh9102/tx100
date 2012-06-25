@@ -22,6 +22,7 @@ clean:
 install: $(TARGET)
 	install -d $(DESTDIR)$(DATA_PATH)
 	install -m 644 player*.png $(DESTDIR)$(DATA_PATH)
+	install -d $(DESTDIR)$(PREFIX)/bin
 	install -m 755 tx100 $(DESTDIR)$(PREFIX)/bin/
 
 uninstall:
