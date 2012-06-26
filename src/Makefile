@@ -4,13 +4,13 @@ DATA_PATH=$(PREFIX)/share/tx100
 
 CXX=g++
 CXXFLAGS=-O3 -Wall
-LIBS=-lsfml-system -lsfml-graphics -lsfml-window
+LIBS=-lsfml-graphics -lsfml-window -lsfml-system
 TARGET=tx100
 DEFS=-DDATA_PATH=\"$(DATA_PATH)\"
 OBJ=bullet.o game.o menu.o player.o tx100.o
 
 $(TARGET): $(OBJ)
-	$(CXX) -o $(TARGET) $(LIBS) $(OBJ)
+	$(CXX) -o $(TARGET) $(OBJ) $(LIBS)
 
 %.o: %.cpp *.h
 	$(CXX) -c $(CXXFLAGS) $(DEFS) $< 
