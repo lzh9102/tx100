@@ -1,0 +1,9 @@
+[Desktop Entry]
+Categories=Game;
+Comment=A simple bullet game
+Comment[zh_TW]=簡單的躲子彈遊戲
+Name=tx100
+Exec=tx100
+Icon=tx100.png
+Type=Application
+Terminal=false
