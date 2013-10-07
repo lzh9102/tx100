@@ -20,6 +20,7 @@ struct Player::Private
     sf::Image image;
     sf::Sprite sprite;
     sf::Vector2f pos; /* position */
+    sf::String label;
     bool alive;
 
     Private() : alive(false) { }
@@ -34,6 +35,8 @@ struct Player::Private
         const int width = sprite.GetSize().x, height = sprite.GetSize().y;
         sprite.SetPosition(x - width / 2, y - height / 2);
         w.Draw(sprite);
+        label.SetPosition(x + width, y - height);
+        w.Draw(label);
     }
 };
 
@@ -158,6 +161,12 @@ void Player::setPosition(float x, float y)
 {
     p->pos.x = x;
     p->pos.y = y;
+}
+
+void Player::setLabel(const char *label)
+{
+    p->label.SetText(label);
+    p->label.SetSize(15);
 }
 
 void Player::constraint(int w, int h)

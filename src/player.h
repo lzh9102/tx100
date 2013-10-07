@@ -46,6 +46,7 @@ public:
     float setX(float x);
     float setY(float y);
     void setPosition(float x, float y);
+    void setLabel(const char *label);
     
     void constraint(int w, int h);
     
