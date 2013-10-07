@@ -128,9 +128,16 @@ void Game::restart()
         const float theta = i * 2 * PI / PLAYER_COUNT;
         p->player[i].setX(p->w/2 + p->player[i].getWidth() * cos(theta));
         p->player[i].setY(p->h/2 + p->player[i].getWidth() * sin(theta));
-        if (p->player_type[i] != OFF)
+        if (p->player_type[i] != OFF) {
             p->player[i].start();
-        else
+            if (p->player_type[i] == COMPUTER) {
+                p->player[i].setLabel("computer");
+            } else {
+                char player_label[20];
+                sprintf(player_label, "player %d", i+1);
+                p->player[i].setLabel(player_label);
+            }
+        } else
             p->player[i].stop();
         p->player_timer[i] = 0.0;
     }
